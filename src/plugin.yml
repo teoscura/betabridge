@@ -1,0 +1,14 @@
+name: TeosBetaBridge
+version: 0.5
+main: me.teoscura.TeosBetaBridge
+commands:
+  betabridge:
+    description: Enter the settings of the plugin
+    usage: /betabridge option
+
+permissions:
+  teobetabridge.*:
+    description: Allows use of /betabridge command
+    default: op
+    children:
+      teobetabridge.betabridge: true
