@@ -13,7 +13,7 @@ import net.dv8tion.jda.api.requests.GatewayIntent;
 import javax.annotation.Nonnull;
 
 public class DiscordListener extends ListenerAdapter {
-    private final String BOT_TOKEN = "MTE4NDk0ODg0ODQ3MzQwNzYxOA.GukRt0.Cn7DBwncSzA_tX7cG4NG9y2wOx4loDA34nl5WY";
+    private final String BOT_TOKEN = "no";
     private String channelId;
     public TeosBetaBridge plugin;
     public MessageChannelUnion channel;
