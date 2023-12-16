@@ -10,16 +10,19 @@ import net.dv8tion.jda.api.entities.channel.unions.MessageChannelUnion;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.dv8tion.jda.api.requests.GatewayIntent;
+import org.bukkit.ChatColor;
+
 import javax.annotation.Nonnull;
 
 public class DiscordListener extends ListenerAdapter {
-    private final String BOT_TOKEN = "MTE4NDk0ODg0ODQ3MzQwNzYxOA.GukRt0.Cn7DBwncSzA_tX7cG4NG9y2wOx4loDA34nl5WY";
+    private final String BOT_TOKEN = "";
     private String channelId;
     public TeosBetaBridge plugin;
     public MessageChannelUnion channel;
     public JDA api = JDABuilder.createLight(BOT_TOKEN, GatewayIntent.GUILD_MESSAGES, GatewayIntent.GUILD_MEMBERS, GatewayIntent.MESSAGE_CONTENT)
             .addEventListeners(this)
             .build();
+
     public DiscordListener(TeosBetaBridge teosBetaBridge) {
         plugin = teosBetaBridge;
         if(channelId!=null){
@@ -34,31 +37,55 @@ public class DiscordListener extends ListenerAdapter {
     public void onMessageReceived(@Nonnull MessageReceivedEvent event){
         User sender = event.getAuthor();
         Message message = event.getMessage();
-        MessageChannelUnion channel = event.getChannel();
 
         if(event.isFromGuild()&&message.getChannelId().equals(channelId)&&!sender.isBot()){
-            if(message.getAttachments().isEmpty()){
-                plugin.mclistener.sendTextMsg(sender.getEffectiveName(), message.getContentDisplay());
-            }
-            else{
-                plugin.mclistener.sendAttachmentMsg(sender.getEffectiveName()); //might be wrong method call
-            }
+            handleMessage(sender, message);
         }
     }
 
     public void updateActivity(){
         api.getPresence().setPresence(OnlineStatus.ONLINE, Activity.customStatus("["+plugin.getServer().getOnlinePlayers().length+" Buddies Online]"));
     }
-
-    public void sendMessageToDiscord(String playername, String messagecontent){
+    public void sendPlayerMessageToDiscord(String playername, String messagecontent){
         channel = (MessageChannelUnion) api.getTextChannelById(channelId);
         channel.sendMessage("`<"+playername+"> "+messagecontent+"`").queue();
     }
-
+    public void sendPlayerLeaveToDiscord(String playername){
+        channel = (MessageChannelUnion) api.getTextChannelById(channelId);
+        channel.sendMessage("**`"+playername+" has left Beta Buddies`**").queue();
+    }
+    public void sendPlayerJoinToDiscord(String playername){
+        channel = (MessageChannelUnion) api.getTextChannelById(channelId);
+        channel.sendMessage("**`"+playername+" has joined Beta Buddies`**").queue();
+    }
     public String getChannelId(){
         return channelId;
     }
     public void setChannelId(String str){
         channelId = str;
     }
+
+    public void handleMessage(User sender, Message message){
+        String basemsg = "["+ ChatColor.DARK_AQUA+"Discord"+ChatColor.WHITE+"] ";
+        int remaining = 128;
+        if(message.getReferencedMessage()!=null){
+            basemsg = basemsg +ChatColor.AQUA+"-Reply to @" +message.getReferencedMessage().getAuthor().getEffectiveName()+"- "+ChatColor.WHITE;
+        }
+        basemsg = basemsg + sender.getEffectiveName() + ": ";
+        if(message.getContentDisplay().length()>(remaining-basemsg.length())){
+            basemsg = basemsg + message.getContentDisplay().substring(0, Math.min(message.getContentDisplay().length(),(remaining-basemsg.length())));
+            basemsg = basemsg + ChatColor.YELLOW+"*message was trimmed*";
+        }
+        else{
+            basemsg = basemsg + message.getContentDisplay();
+        }
+        if(message.getAttachments().size()==1){
+            basemsg = basemsg + ChatColor.AQUA+" -Discord Attachment-";
+        }
+        if(message.getAttachments().size()>1){
+            basemsg = basemsg + ChatColor.AQUA+" -"+ChatColor.YELLOW+message.getAttachments().size()+ChatColor.AQUA+" Discord Attachments-";
+        }
+        plugin.mclistener.sendMsgToPlayers(basemsg);
+    }
 }
+
