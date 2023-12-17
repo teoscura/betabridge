@@ -21,21 +21,17 @@ public class MinecraftListener extends PlayerListener {
     public void onPlayerJoin(PlayerJoinEvent event){
         Player player = event.getPlayer();
         plugin.dslistener.sendPlayerJoinToDiscord(player.getDisplayName());
+        plugin.dslistener.updateActivity();
     }
     @Override
     public void onPlayerQuit(PlayerQuitEvent event){
         Player player = event.getPlayer();
         plugin.dslistener.sendPlayerLeaveToDiscord(player.getDisplayName());
+        plugin.dslistener.updateActivity();
     }
     public void sendMsgToPlayers(String msg){
         for(Player p: plugin.getServer().getOnlinePlayers()){
             p.sendMessage(msg);
         }
     }
-    /*public void sendAttachmentMsg(String msgsender){
-        for(Player p: plugin.getServer().getOnlinePlayers()){
-            p.sendMessage("["+ChatColor.DARK_AQUA+"Discord"+ChatColor.WHITE+"] "+msgsender+": "+ChatColor.AQUA+"-Discord Attachment-");
-
-        }
-    }*/
 }

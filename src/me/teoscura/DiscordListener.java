@@ -15,21 +15,24 @@ import org.bukkit.ChatColor;
 import javax.annotation.Nonnull;
 
 public class DiscordListener extends ListenerAdapter {
-    private final String BOT_TOKEN = "";
+    private String BOT_TOKEN;
     private String channelId;
     public TeosBetaBridge plugin;
     public MessageChannelUnion channel;
-    public JDA api = JDABuilder.createLight(BOT_TOKEN, GatewayIntent.GUILD_MESSAGES, GatewayIntent.GUILD_MEMBERS, GatewayIntent.MESSAGE_CONTENT)
-            .addEventListeners(this)
-            .build();
+    public JDA api;
 
-    public DiscordListener(TeosBetaBridge teosBetaBridge) {
+    public DiscordListener(TeosBetaBridge teosBetaBridge) throws InterruptedException {
         plugin = teosBetaBridge;
-        if(channelId!=null){
+        if(plugin.configured){
+            setBOT_TOKEN(plugin.loadedToken);
+            setChannelId(plugin.loadedID);
+            api = JDABuilder.createLight(BOT_TOKEN, GatewayIntent.GUILD_MESSAGES, GatewayIntent.GUILD_MEMBERS, GatewayIntent.MESSAGE_CONTENT)
+                    .addEventListeners(this)
+                    .build().awaitReady();
             channel = (MessageChannelUnion) api.getTextChannelById(channelId);
         }
         else{
-            System.out.println("No channel id was setup, waiting on config load.");
+            System.out.println("No config was setup, please configure it using /betabridge");
         }
     }
 
@@ -42,7 +45,6 @@ public class DiscordListener extends ListenerAdapter {
             handleMessage(sender, message);
         }
     }
-
     public void updateActivity(){
         api.getPresence().setPresence(OnlineStatus.ONLINE, Activity.customStatus("["+plugin.getServer().getOnlinePlayers().length+" Buddies Online]"));
     }
@@ -64,7 +66,12 @@ public class DiscordListener extends ListenerAdapter {
     public void setChannelId(String str){
         channelId = str;
     }
-
+    public String getBOT_TOKEN() {
+        return BOT_TOKEN;
+    }
+    public void setBOT_TOKEN(String s) {
+        BOT_TOKEN = s;
+    }
     public void handleMessage(User sender, Message message){
         String basemsg = "["+ ChatColor.DARK_AQUA+"Discord"+ChatColor.WHITE+"] ";
         int remaining = 128;
@@ -87,5 +94,6 @@ public class DiscordListener extends ListenerAdapter {
         }
         plugin.mclistener.sendMsgToPlayers(basemsg);
     }
+
 }
 
